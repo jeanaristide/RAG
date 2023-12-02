@@ -5,7 +5,7 @@ from llama_index import VectorStoreIndex, SimpleDirectoryReader, ServiceContext
 import logging
 import sys
 from dotenv import load_dotenv
-load_dotenv('/Users/jeana/RAG/RAG/LlamaIndex/.env')
+load_dotenv('/Users/jeana/.env')
 
 logging.basicConfig(
     stream=sys.stdout, level=logging.INFO
@@ -44,7 +44,7 @@ service_context = ServiceContext.from_defaults(
 set_global_service_context(service_context)
 
 documents = SimpleDirectoryReader(
-    input_files=[r"/Users/jeana/RAG/RAG/LlamaIndex/paul_graham_essay.txt"] #or just indicate the fullpath of the folder containing the data
+    input_files=["/Users/jeana/Retrieval-Augmented-Generation/LlamaIndex/paul_graham_essay.txt"] #or just indicate the fullpath of the folder containing the data
 ).load_data()
 index = VectorStoreIndex.from_documents(documents)
 
