@@ -1,3 +1,16 @@
+""""
+This .py file creates an interactive Q&A bot.
+
+This assumes that your enviromental variables are stored in a .env file that includes the following:
+OPENAI_DEPLOYMENT_ENDPOINT = ???
+OPENAI_API_KEY = ???
+OPENAI_DEPLOYMENT_NAME = ??? 
+OPENAI_DEPLOYMENT_VERSION = ???
+OPENAI_MODEL_NAME = ???
+OPENAI_EMBEDDING_DEPLOYMENT_NAME = ???
+OPENAI_EMBEDDING_MODEL_NAME = ???
+"""
+
 import os
 from llama_index.llms import AzureOpenAI
 from llama_index.embeddings import AzureOpenAIEmbedding
@@ -5,10 +18,11 @@ from llama_index import VectorStoreIndex, SimpleDirectoryReader, ServiceContext
 import logging
 import sys
 from dotenv import load_dotenv
+
 load_dotenv('/Users/jeana/.env')
 
 logging.basicConfig(
-    stream=sys.stdout, level=logging.INFO
+    stream=sys.stdout, level=logging.WARNING
 )  # logging.DEBUG for more verbose output
 logging.getLogger().addHandler(logging.StreamHandler(stream=sys.stdout))
 
@@ -27,8 +41,8 @@ llm = AzureOpenAI(
 
 # # You need to deploy your own embedding model as well as your own chat completion model
 embed_model = AzureOpenAIEmbedding(
-    model=os.environ['OPENAI_ADA_EMBEDDING_MODEL_NAME'],
-    deployment_name=os.environ['OPENAI_ADA_EMBEDDING_DEPLOYMENT_NAME'],
+    model=os.environ['OPENAI_EMBEDDING_MODEL_NAME'],
+    deployment_name=os.environ['OPENAI_EMBEDDING_DEPLOYMENT_NAME'],
     api_key=api_key,
     azure_endpoint=azure_endpoint,
     api_version=api_version,
