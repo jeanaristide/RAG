@@ -1,8 +1,8 @@
 import os
 import streamlit as st
+from llama_index.indices.list import SummaryIndex
 from llama_index import (
     Document,
-    SummaryIndex,
     ServiceContext,
     load_index_from_storage,
 )
