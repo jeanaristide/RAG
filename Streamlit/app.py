@@ -13,10 +13,12 @@ from trulens_eval import TruLlama, Feedback, Tru, feedback
 from langchain.llms import Ollama
 from trulens_eval.tru_custom_app import instrument
 from trulens_eval import LiteLLM
+import streamlit as st
 import litellm
 litellm.set_verbose=False
 tru = Tru()
-
+from llama_index import download_loader
+import PyPDF2
 
 class modelException(Exception):
     def __init__(self, invalid_value, allowed_values):
@@ -145,3 +147,52 @@ def show_metrics(tru):
 
 def show_leaderboard(tru):
     return tru.get_leaderboard(app_ids=[])
+
+
+
+
+############################################################################################################
+
+st.title("🦙 Retrieval Augmented Generation based Q&A over Arxiv PDFs 🦙")
+
+setup_tab, document_tab, upload_questions_tab = st.tabs(["Setup", "Select PDFs", "Upload Questions"])
+
+with setup_tab:
+    st.subheader("LLM Predictor Setup")
+    
+    llm_name = st.selectbox(
+        label = "Which LLM?", options = ['llama2', 'gpt-35-turbo'], key = 'llm_predictor', index = None
+    )
+    if llm_name == 'gpt-35-turbo':
+
+        OPENAI_API_KEY = st.text_input("Enter your Azure OpenAI API key here")
+        OPENAI_DEPLOYMENT_ENDPOINT = st.text_input("Enter your Azure OpenAI Deployment Endpoint here")
+        OPENAI_DEPLOYMENT_NAME = st.text_input("Enter your Azure OpenAI LLM Deployment Name here")
+        OPENAI_DEPLOYMENT_VERSION = st.text_input("Enter your Azure OpenAI Deployment Version here")
+
+        model_temperature = st.slider(
+            "LLM Temperature", min_value=0.0, max_value=1.0,
+            step=0.1, disabled= True if st.session_state.llm_predictor == 'llama2' else False
+        )
+    embedding_model_name = st.selectbox(
+        label = "Which Embedding Model?", options = ['text-embedding-ada-002', 'sentence-transformers/all-mpnet-base-v2', "BAAI/bge-small-en-v1.5"]
+            , key = 'embedding_model', index = None
+    )
+
+    if embedding_model_name == 'text-embedding-ada-002':
+        OPENAI_EMBEDDING_DEPLOYMENT_NAME = st.text_input("Enter your Azure OpenAI Embedding Deployment Name here")
+
+with document_tab:
+    st.subheader("Select Arxiv PDF(s)")
+
+    OPENAI_DEPLOYMENT_ENDPOINT = st.text_input("Enter your Arxiv search query here")
+
+    ArxivReader = download_loader("ArxivReader")
+
+    loader = ArxivReader()
+    documents = loader.load_data(search_query='id:2311.12399')
+####
+
+
+    
+        
