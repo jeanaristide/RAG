@@ -18,7 +18,8 @@ import litellm
 litellm.set_verbose=False
 tru = Tru()
 from llama_index import download_loader
-import PyPDF2
+import hashlib
+import arxiv
 
 class modelException(Exception):
     def __init__(self, invalid_value, allowed_values):
@@ -148,8 +149,25 @@ def show_metrics(tru):
 def show_leaderboard(tru):
     return tru.get_leaderboard(app_ids=[])
 
+def _hacky_hash(some_string):
+    _hash = hashlib.md5(some_string.encode("utf-8")).hexdigest()
+    return _hash
 
+def list_files(directory):
+    """
+    List all files with a specific extension in the given directory.
 
+    Parameters:
+    - directory (str): The path of the directory to search for files.
+    - file_extension (str): The file extension to filter files.
+
+    Returns:
+    - List[str]: A list of file names with the specified extension.
+    """
+    file_list = []
+    for filename in os.listdir(directory):
+        file_list.append(filename)
+    return file_list
 
 ############################################################################################################
 
@@ -185,14 +203,19 @@ with setup_tab:
 with document_tab:
     st.subheader("Select Arxiv PDF(s)")
 
-    search_query = st.text_input("Enter your Arxiv search query here")
+    with st.form('Arxiv Search Query'):
+        search_query = st.text_input("Enter your Arxiv search query here")
+        max_results = st.number_input('Enter Maximum amount of Arxiv Articles to Retrieve', min_value = 1, max_value = 10)
+        submitted = st.form_submit_button("Submit")
 
-    ArxivReader = download_loader("ArxivReader")
+        if submitted:
+            directory_path = '.papers'
 
-    loader = ArxivReader()
-    documents = loader.load_data(search_query=search_query, max_results = 1, papers_dir = r'/Users/jeana/Retrieval-Augmented-Generation/.papers')
-####
+            from llama_index import download_loader
 
+            ArxivReader = download_loader("ArxivReader")
 
-    
+            loader = ArxivReader()
+            documents = loader.load_data(search_query='id:2311.12399', max_results=max_results)
+            st.write(f"Loaded {len(documents)} Documents")
         
