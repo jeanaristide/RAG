@@ -185,12 +185,12 @@ with setup_tab:
 with document_tab:
     st.subheader("Select Arxiv PDF(s)")
 
-    OPENAI_DEPLOYMENT_ENDPOINT = st.text_input("Enter your Arxiv search query here")
+    search_query = st.text_input("Enter your Arxiv search query here")
 
     ArxivReader = download_loader("ArxivReader")
 
     loader = ArxivReader()
-    documents = loader.load_data(search_query='id:2311.12399')
+    documents = loader.load_data(search_query=search_query, max_results = 1, papers_dir = r'/Users/jeana/Retrieval-Augmented-Generation/.papers')
 ####
 
 
