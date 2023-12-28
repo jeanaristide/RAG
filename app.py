@@ -193,7 +193,7 @@ st.set_page_config(
     layout="wide",
 )
 
-st.title("🦙 Retrieval Augmented Generation based Q&A over Arxiv PDFs 🦙")
+st.title("🦙 RAG based Q&A over Arxiv PDFs 🦙")
 
 setup_tab, document_tab, ask_tab, metrics_tab = st.tabs(["Setup", "Select PDFs", "Ask Questions", "Evaluation Metrics"])
 
