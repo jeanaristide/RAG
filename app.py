@@ -47,10 +47,10 @@ def feedbacks(llm_name):
     if llm_name == 'azureoai':
         # Initialize AzureOpenAI-based feedback function collection class:
         llm_provider = feedback.AzureOpenAI(
-                                        deployment_name=OPENAI_DEPLOYMENT_NAME,
-                                        api_key = OPENAI_API_KEY,
-                                        api_version=OPENAI_DEPLOYMENT_VERSION,
-                                        azure_endpoint=OPENAI_DEPLOYMENT_ENDPOINT,
+                                        deployment_name=st.session_state.OPENAI_DEPLOYMENT_NAME,
+                                        api_key = st.session_state.OPENAI_API_KEY,
+                                        api_version=st.session_state.OPENAI_DEPLOYMENT_VERSION,
+                                        azure_endpoint=st.session_state.OPENAI_DEPLOYMENT_ENDPOINT,
                                         # model = os.environ['OPENAI_MODEL_NAME']
                                         )
 
@@ -95,10 +95,10 @@ class RAG():
             self.llm = AzureOpenAI(
                     # model= os.environ['OPENAI_MODEL_NAME'],
                     model = llm_name,
-                    deployment_name= OPENAI_DEPLOYMENT_NAME,
-                    api_key= OPENAI_API_KEY,
-                    azure_endpoint= OPENAI_DEPLOYMENT_ENDPOINT,
-                    api_version= OPENAI_DEPLOYMENT_VERSION,
+                    deployment_name= st.session_state.OPENAI_DEPLOYMENT_NAME,
+                    api_key= st.session_state.OPENAI_API_KEY,
+                    azure_endpoint= st.session_state.OPENAI_DEPLOYMENT_ENDPOINT,
+                    api_version= st.session_state.OPENAI_DEPLOYMENT_VERSION,
                 )
             
         elif llm_name == 'llama2':
@@ -109,10 +109,10 @@ class RAG():
             self.embedding_model = AzureOpenAIEmbedding(
                     # model=os.environ['OPENAI_EMBEDDING_MODEL_NAME'],
                     model=embedding_model_name,
-                    deployment_name=OPENAI_EMBEDDING_DEPLOYMENT_NAME,
-                    api_key=OPENAI_API_KEY,
-                    azure_endpoint=OPENAI_DEPLOYMENT_ENDPOINT,
-                    api_version=OPENAI_DEPLOYMENT_VERSION,
+                    deployment_name=st.session_state.OPENAI_EMBEDDING_DEPLOYMENT_NAME,
+                    api_key=st.session_state.OPENAI_API_KEY,
+                    azure_endpoint=st.session_state.OPENAI_DEPLOYMENT_ENDPOINT,
+                    api_version=st.session_state.OPENAI_DEPLOYMENT_VERSION,
                 )
         elif embedding_model_name in ['sentence-transformers/all-mpnet-base-v2', "BAAI/bge-small-en-v1.5"]:
             self.embedding_model = HuggingFaceEmbeddings(
@@ -152,7 +152,7 @@ class RAG():
 
         with tru_query_engine_recorder as recorder:
             answer = query_engine.query(query)
-            retrieved_sources = answer.get_formatted_sources()
+            retrieved_sources = answer.source_nodes
             # print(answer.get_formatted_sources())
             # print("query was:", query)
             # print("answer was:", answer)
@@ -198,7 +198,7 @@ st.title("🦙 RAG based Q&A over Arxiv PDFs 🦙")
 setup_tab, document_tab, ask_tab, metrics_tab = st.tabs(["Setup", "Select PDFs", "Ask Questions", "Evaluation Metrics"])
 
 with setup_tab:
-    st.subheader("LLM Predictor Setup")
+    st.header("LLM Predictor Setup")
     
     with st.form('Select Desired LLM, Embedding Model and Evaluator LLM'):
         llm_name = st.selectbox(
@@ -218,26 +218,29 @@ with setup_tab:
 
         submitted_models = st.form_submit_button("Confirm")
 
-        if submitted_models:
-            
-            if llm_name == 'gpt-35-turbo':
+    if llm_name == 'gpt-35-turbo' or evaluator_llm_option=='azureoai' or embedding_model_name == 'text-embedding-ada-002':
 
-                OPENAI_API_KEY = st.text_input("Enter your Azure OpenAI API key here")
-                OPENAI_DEPLOYMENT_ENDPOINT = st.text_input("Enter your Azure OpenAI Deployment Endpoint here")
-                OPENAI_DEPLOYMENT_NAME = st.text_input("Enter your Azure OpenAI LLM Deployment Name here")
-                OPENAI_DEPLOYMENT_VERSION = st.text_input("Enter your Azure OpenAI Deployment Version here")
+        with st.form('Enter Relevant Azure Open AI Details'):
+
+            st.session_state.OPENAI_API_KEY = st.text_input("Enter your Azure OpenAI API key here")
+            st.session_state.OPENAI_DEPLOYMENT_ENDPOINT = st.text_input("Enter your Azure OpenAI Deployment Endpoint here")
+            st.session_state.OPENAI_DEPLOYMENT_VERSION = st.text_input("Enter your Azure OpenAI Deployment Version here")
+
+            if embedding_model_name == 'text-embedding-ada-002':
+                st.session_state.OPENAI_EMBEDDING_DEPLOYMENT_NAME = st.text_input("Enter your Azure OpenAI Embedding Deployment Name here")        
+            else:
+                st.session_state.OPENAI_DEPLOYMENT_NAME = st.text_input("Enter your Azure OpenAI LLM Deployment Name here")
 
                 model_temperature = st.slider(
                     "LLM Temperature", min_value=0.0, max_value=1.0,
                     step=0.1, disabled= True if st.session_state.llm_predictor == 'llama2' else False
                 )
 
-            if embedding_model_name == 'text-embedding-ada-002':
-                OPENAI_EMBEDDING_DEPLOYMENT_NAME = st.text_input("Enter your Azure OpenAI Embedding Deployment Name here")
-            
+            submitted_openai = st.form_submit_button("Confirm")
+                    
 
 with document_tab:
-    st.subheader("Select Arxiv PDF(s)")
+    st.header("Select Arxiv PDF(s)")
 
     with st.form('Arxiv Search Query'):
         search_query = st.text_input("Enter your Arxiv search query here")
@@ -245,7 +248,7 @@ with document_tab:
         submitted = st.form_submit_button("Submit")
 
         if submitted:
-            delete_folder('./arxiv_storage') ## reset indexed documents if any
+            # delete_folder('./arxiv_storage') ## reset indexed documents if any
 
             directory_path = '.papers'
 
@@ -258,7 +261,7 @@ with document_tab:
             st.write(f"Loaded {len(st.session_state.documents)} Documents")
 
 with ask_tab:
-    st.subheader("Ask Questions over your Arxiv PDFs")
+    st.header("Ask Questions over your Arxiv PDFs")
 
     with st.form('Q&A over Arxiv Docs'):
         query = st.text_input("Enter your questions here")
@@ -272,11 +275,25 @@ with ask_tab:
 
             answer, retrieved_sources = rag.query(query)
 
-            st.write(f'Answer: {answer}')
-            st.write(f'Source: {retrieved_sources}')
+            st.subheader("Answer")
+            st.write(answer.response)
+
+            
+            st.divider()
+            st.subheader("Metadata of Sources")
+            
+            df = pd.DataFrame(answer.metadata)
+            st.dataframe(df.transpose(), use_container_width = True,column_config={"URL" : st.column_config.LinkColumn()})
+            
+            st.divider()
+            st.subheader('Text of Sources')
+            for node_source in retrieved_sources:
+                st.write(f'Node ID: {node_source.node_id}')
+                st.write(f'Retrieved Text: {node_source.text}')
+                st.divider()
 
 with metrics_tab    :
-    st.subheader("Evaluation Metrics")
+    st.header("Evaluation Metrics")
 
     metrics = show_metrics(tru)
     leaderboard = tru.get_leaderboard(app_ids=[])
