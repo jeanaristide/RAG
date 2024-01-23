@@ -1,8 +1,13 @@
 # Retrieval Augmented Generation
 
-## Contents:
+## Directory:
 
-### 1. Using Google Gemini API
+### 1. Google Gemini Folder
+
+| File | Description |
+|---   | ---         |
+| [Semantic Retrieval.ipynb](../Retrieval-Augmented-Generation/Google%20Gemini/Semantic%20Retrieval.ipynb) | Demonstrates basic semantic retrieval using Google Gemini model |
+
 
 ### 2. LlamaIndex
 
