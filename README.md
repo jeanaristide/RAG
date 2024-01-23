@@ -6,7 +6,7 @@
 
 | File | Description |
 |---   | ---         |
-| [Semantic Retrieval.ipynb](../Retrieval-Augmented-Generation/Google%20Gemini/Semantic%20Retrieval.ipynb) | Demonstrates basic semantic retrieval using Google Gemini model |
+| [Semantic Retrieval.ipynb](Google%20Gemini/Semantic%20Retrieval.ipynb) | Demonstrates basic semantic retrieval using Google Gemini model |
 
 
 ### 2. LlamaIndex
